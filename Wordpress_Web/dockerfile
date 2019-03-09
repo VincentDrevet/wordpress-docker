@@ -1,0 +1,39 @@
+FROM ubuntu:latest
+
+# On telecharge nginx
+RUN apt-get update
+RUN DEBIAN_FRONTEND=noninteractive apt-get install nginx php7.2 php7.2-common php7.2-cli php7.2-fpm -y
+RUN ln -fs /usr/share/zoneinfo/Europe/Paris /etc/localtime
+RUN dpkg-reconfigure --frontend noninteractive tzdata
+
+# On copie les sources, les fichiers de configuration et le wrapper
+ADD ./Sources/wordpress-5.1-fr_FR.tar.gz /root/wordpress-5.1-fr_FR.tar.gz
+ADD ./Configurations/wordpress.conf /etc/nginx/sites-available/wordpress.conf
+ADD ./Configurations/php7.2-fpm.conf /etc/nginx/conf.d/php7.2-fpm.conf
+ADD ./wrapper.sh .
+
+# On désarchive le tarball et on créer un lien symbolique pour activer le vhost
+RUN mv /root/wordpress-5.1-fr_FR.tar.gz /var/www/wordpress
+RUN ln -s /etc/nginx/sites-available/wordpress.conf /etc/nginx/sites-enabled/wordpress.conf
+RUN echo "daemon off;" >> /etc/nginx/nginx.conf
+
+# On applique les droits à www-data
+RUN chown -R www-data:www-data /var/www
+
+# On rend le wrapper executable
+RUN chmod u+x ./wrapper.sh
+
+# On crée le fichier /run/php pour php-fpm
+RUN mkdir -p /run/php
+
+# On modifie l'emplacement du socket unix de php-fpm
+RUN sed "s/\/run\/php\/php7\.2-fpm\.sock/\/var\/run\/php\/php7\.2-fpm\.sock/g" /etc/php/7.2/fpm/pool.d/www.conf > /etc/php/7.2/fpm/pool.d/www.conf2
+RUN rm /etc/php/7.2/fpm/pool.d/www.conf
+RUN mv /etc/php/7.2/fpm/pool.d/www.conf2 /etc/php/7.2/fpm/pool.d/www.conf
+ 
+
+# On lance nginx
+
+EXPOSE 8080
+
+CMD ["bash","wrapper.sh"]
