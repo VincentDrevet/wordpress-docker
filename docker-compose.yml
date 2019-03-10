@@ -1,0 +1,8 @@
+version: '3'
+services:
+        web:
+                container_name: "nginx_wordpress"
+                build: ./Wordpress_Web
+                ports:
+                        - "8080:8080"
+
