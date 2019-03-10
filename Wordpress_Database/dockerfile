@@ -1,0 +1,60 @@
+FROM ubuntu:latest
+
+#
+# Définition des variables d'environnement
+#
+
+#
+# On partage /var/lib/mysql/ avec l'hote pour périniser la bdd
+#
+
+# VOLUME /var/lib/mysql/ 
+
+
+ENV MYSQL_DATABASE_NAME=""
+ENV MYSQL_USERNAME=""
+
+#
+# Installation de mysql-server
+#
+
+RUN apt-get update && apt-get install mysql-server -y
+
+
+#
+# On copie le wrapper dans conteneur et on affecte les droits
+#
+
+ADD ./wrapper.sh .
+RUN chmod u+x ./wrapper.sh
+#
+# On active l'accès distant de mysql
+#
+
+RUN sed "s/127\.0\.0\.1/0\.0\.0\.0/g" /etc/mysql/mysql.conf.d/mysqld.cnf > /etc/mysql/mysql.conf.d/mysqld.cnf.new
+RUN rm /etc/mysql/mysql.conf.d/mysqld.cnf
+RUN mv /etc/mysql/mysql.conf.d/mysqld.cnf.new /etc/mysql/mysql.conf.d/mysqld.cnf
+
+#
+# On créer le dossier qui va contenir le socket de mysql et on affecte l'appartenance à mysql
+#
+
+RUN mkdir -p /var/run/mysqld
+RUN chown -R mysql:mysql /var/run/mysqld
+
+
+
+#
+# On expose le port de mysql
+#
+
+EXPOSE 3306
+
+#
+# On lance MYSQLD
+#
+
+CMD ["bash","wrapper.sh"]
+
+
+

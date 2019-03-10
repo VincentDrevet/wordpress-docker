@@ -1,5 +1,6 @@
 FROM ubuntu:latest
 
+
 # On telecharge nginx
 RUN apt-get update
 RUN DEBIAN_FRONTEND=noninteractive apt-get install nginx php7.2 php7.2-common php7.2-cli php7.2-fpm php7.2-mysql -y
