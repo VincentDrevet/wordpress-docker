@@ -1,8 +1,35 @@
 version: '3'
 services:
         web:
+                depends_on:
+                        - bdd
                 container_name: "nginx_wordpress"
                 build: ./Wordpress_Web
                 ports:
                         - "8080:8080"
+                networks:
+                        wordpress:
+
+        bdd:
+                container_name: "mysql_wordpress"
+                image: mysql:latest
+                ports:
+                        - "3306:3306"
+                networks:
+                        wordpress:
+                environment:
+                        MYSQL_ROOT_HOST: "%"
+                        MYSQL_ROOT_PASSWORD: "P@ssw0rd"
+                        MYSQL_DATABASE: "wordpress"
+                        MYSQL_USER: "wordpress_user"
+                        MYSQL_PASSWORD: "P@ssw0rd"
+                volumes:
+                        - db-data:/var/lib/mysql
+
+networks:
+        wordpress:
+                driver: bridge
+
+volumes:
+        db-data:
 
