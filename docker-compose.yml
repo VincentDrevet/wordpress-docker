@@ -13,8 +13,6 @@ services:
         bdd:
                 container_name: "mysql_wordpress"
                 image: mysql:latest
-                ports:
-                        - "3306:3306"
                 networks:
                         wordpress:
                 environment:
